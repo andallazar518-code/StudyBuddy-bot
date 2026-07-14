@@ -1,15 +1,27 @@
-from flask import Flask, request, jsonify
-import google.generativeai as genai
-import requests
+from flask import Flask, request
 import os
-import time
-import threading
-import random
-import queue
-from collections import defaultdict, deque
 
 app = Flask(__name__)
 
+VERIFY_TOKEN = "RAINIER22"  # Dapat same nito sa nilagay mo sa Meta
+
+@app.route('/webhook', methods=['GET'])
+def verify():
+    # Ito yung pang-verify ni Facebook
+    if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.verify_token") == VERIFY_TOKEN:
+        return request.args.get("hub.challenge"), 200
+    return "Verification failed", 403
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # Dito papasok yung messages galing Messenger
+    data = request.get_json()
+    print(data) # Para makita natin sa Render logs
+    return "ok", 200
+
+@app.route('/', methods=['GET'])
+def home():
+    return "StudyBuddy Bot is Live", 200
 # = SET MO TO SA RENDER ENV VARS
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN")
